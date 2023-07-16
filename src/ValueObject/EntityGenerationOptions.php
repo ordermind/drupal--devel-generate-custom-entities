@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\devel_generate_custom_entities\ValueObject;
 
 class EntityGenerationOptions {
+  protected bool $drush;
   protected string $entityTypeId;
   protected string $labelPattern;
   protected array $bundleNames;
@@ -23,6 +24,7 @@ class EntityGenerationOptions {
    * Example: "Demo Content #@num"
    */
   public function __construct(
+    bool $drush,
     string $entityTypeId,
     string $labelPattern,
     array $bundleNames,
@@ -34,6 +36,7 @@ class EntityGenerationOptions {
       throw new \InvalidArgumentException('The "numberOfEntities" parameter must be a positive integer');
     }
 
+    $this->drush = $drush;
     $this->entityTypeId = $entityTypeId;
     $this->labelPattern = $labelPattern;
     $this->bundleNames = $bundleNames;
@@ -44,6 +47,7 @@ class EntityGenerationOptions {
 
   public static function fromArray(array $values): static {
     return new static(
+      !empty($values['drush']),
       $values['entityTypeId'],
       $values['labelPattern'],
       $values['bundleNames'],
@@ -51,6 +55,10 @@ class EntityGenerationOptions {
       $values['deleteEntitiesBeforeCreation'],
       $values['authorUid']
     );
+  }
+
+  public function isDrush(): bool {
+    return $this->drush;
   }
 
   public function getEntityTypeId(): string {
@@ -79,6 +87,7 @@ class EntityGenerationOptions {
 
   public function toArray(): array {
     return [
+      'drush' => $this->isDrush(),
       'entityTypeId' => $this->getEntityTypeId(),
       'labelPattern' => $this->getLabelPattern(),
       'bundleNames' => $this->getBundleNames(),

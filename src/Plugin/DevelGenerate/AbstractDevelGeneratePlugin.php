@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\devel_generate_custom_entities\Plugin\DevelGenerate;
 
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -18,6 +19,7 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
   protected EntityGeneratorWithBatchStrategy $withBatchStrategy;
   protected EntityGeneratorWithoutBatchStrategy $withoutBatchStrategy;
   protected AccountProxyInterface $currentUser;
+  protected EntityTypeBundleInfoInterface $bundleInfo;
 
   public function __construct(
     array $configuration,
@@ -25,13 +27,15 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
     array $plugin_definition,
     EntityGeneratorWithBatchStrategy $withBatchStrategy,
     EntityGeneratorWithoutBatchStrategy $withoutBatchStrategy,
-    AccountProxyInterface $currentUser
+    AccountProxyInterface $currentUser,
+    EntityTypeBundleInfoInterface $bundleInfo
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->withBatchStrategy = $withBatchStrategy;
     $this->withoutBatchStrategy = $withoutBatchStrategy;
     $this->currentUser = $currentUser;
+    $this->bundleInfo = $bundleInfo;
   }
 
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
@@ -41,16 +45,12 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
       $plugin_definition,
       $container->get('devel_generate_custom_entities.strategy_with_batch'),
       $container->get('devel_generate_custom_entities.strategy_without_batch'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('entity_type.bundle.info')
     );
   }
 
   abstract protected function getEntityTypeId(): string;
-
-  /**
-   * @return string[] array of bundles names to generate entities for.
-   */
-  abstract protected function getBundleNames(): array;
 
   /**
    * @return string The label pattern as described in the EntityGenerationOptions.
@@ -85,8 +85,10 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
   public function generate(array $values): void {
     $num = (int) $values['num'];
     $deleteExisting = (bool) $values['delete_existing'];
+    $drush = !empty($values['drush']);
 
     $generationOptions = new EntityGenerationOptions(
+      $drush,
       $this->getEntityTypeId(),
       $this->getLabelPattern(),
       $this->getBundleNames(),
@@ -105,11 +107,21 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
    */
   public function validateDrushParams(array $args, array $options = []): array {
     $values = [
-      'num' => $options['num'],
-      'deleteExisting' => $options['deleteExisting'],
+      'num' => $args['num'],
+      'delete_existing' => $options['delete-existing'],
+      'drush' => TRUE,
     ];
 
     return $values;
+  }
+
+  /**
+   * @return string[] array of bundles names to generate entities for.
+   */
+  protected function getBundleNames(): array {
+    $bundles = $this->bundleInfo->getBundleInfo($this->getEntityTypeId());
+
+    return array_keys($bundles);
   }
 
   protected function getStrategy(int $num): EntityGeneratorStrategyInterface {

@@ -1,0 +1,6 @@
+services:
+  devel_generate_custom_entities.commands:
+    class: Drupal\devel_generate_custom_entities\Commands\DevelGenerateCommand
+    arguments: ['@plugin.manager.develgenerate']
+    tags:
+      -  { name: drush.command }

@@ -16,8 +16,6 @@ class EntityGeneratorWithBatchStrategy implements EntityGeneratorStrategyInterfa
   use StringTranslationTrait;
   use DependencySerializationTrait;
 
-  protected bool $drushBatch = FALSE;
-
   protected MessengerInterface $messenger;
   protected ExtensionPathResolver $extensionPathResolver;
   protected EntityGenerator $entityGenerator;
@@ -36,9 +34,9 @@ class EntityGeneratorWithBatchStrategy implements EntityGeneratorStrategyInterfa
   }
 
   public function generateEntities(EntityGenerationOptions $options): void {
-    // If it is drushBatch then this operation is already run in the
+    // If this is run via drush then this operation is already run in the
     // DevelGenerateCustomEntitiesDevelGenerate::validateDrushParams().
-    if (!$this->drushBatch) {
+    if (!$options->isDrush()) {
       // Setup the batch operations and save the variables.
       $operations[] = ['devel_generate_custom_entities_operation',
         [$this, 'batchContentPreEntity', $options],
@@ -68,20 +66,18 @@ class EntityGeneratorWithBatchStrategy implements EntityGeneratorStrategyInterfa
     ];
 
     batch_set($batch);
-    if ($this->drushBatch) {
+    if ($options->isDrush()) {
       drush_backend_batch_process();
     }
   }
 
-  public function deleteExistingEntities(string $entityTypeId): void {}
-
-  public function batchContentPreEntity(EntityGenerationOptions $options, array &$context) {
+  public function batchContentPreEntity(EntityGenerationOptions $options, array|\ArrayObject &$context) {
     $context['results'] = $options->toArray();
     $context['results']['currentNumber'] = 0;
   }
 
-  public function batchContentDeleteExisting(EntityGenerationOptions $options, array &$context) {
-    if ($this->drushBatch) {
+  public function batchContentDeleteExisting(EntityGenerationOptions $options, array|\ArrayObject &$context) {
+    if ($options->isDrush()) {
       $this->entityDeleter->deleteAllEntitiesOfType($options->getEntityTypeId());
     }
     else {
@@ -92,13 +88,13 @@ class EntityGeneratorWithBatchStrategy implements EntityGeneratorStrategyInterfa
     $this->messenger->addMessage($this->t('Old entities have been deleted.'));
   }
 
-  public function batchContentAddEntity(EntityGenerationOptions $options, array &$context) {
+  public function batchContentAddEntity(EntityGenerationOptions $options, array|\ArrayObject &$context) {
     if (!isset($context['results']['currentNumber'])) {
       $context['results']['currentNumber'] = 0;
     }
     $context['results']['currentNumber']++;
 
-    if ($this->drushBatch) {
+    if ($options->isDrush()) {
       $this->entityGenerator->generateSingleEntity($options, $context['results']['currentNumber']);
     }
     else {
