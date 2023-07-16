@@ -94,7 +94,7 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
       $this->getBundleNames(),
       $num,
       $deleteExisting,
-      (int) $this->currentUser->id()
+      (int) $this->currentUser->id() ?: 1
     );
 
     $strategy = $this->getStrategy($num);
