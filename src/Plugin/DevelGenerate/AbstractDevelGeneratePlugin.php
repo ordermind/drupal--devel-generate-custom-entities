@@ -82,7 +82,7 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
   /**
    * {@inheritdoc}
    */
-  protected function generateElements(array $values): void {
+  public function generate(array $values): void {
     $num = (int) $values['num'];
     $deleteExisting = (bool) $values['delete_existing'];
 
