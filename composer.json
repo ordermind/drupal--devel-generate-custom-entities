@@ -1,5 +1,5 @@
 {
-    "name": "drupal/devel_custom_entity_generation",
+    "name": "drupal/devel_generate_custom_entities",
     "type": "drupal-module--tengstrom",
     "require": {
         "drupal/core": "^9.4 || ^10",
