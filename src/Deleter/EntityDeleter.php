@@ -14,6 +14,12 @@ class EntityDeleter {
     $this->entityTypeManager = $entityTypeManager;
   }
 
+  public function countEntitiesToDelete(string $entityTypeId): int {
+    $storage = $this->entityTypeManager->getStorage($entityTypeId);
+
+    return $storage->getQuery()->accessCheck(FALSE)->count()->execute();
+  }
+
   public function deleteAllEntitiesOfType(string $entityTypeId): void {
     $storage = $this->entityTypeManager->getStorage($entityTypeId);
 
@@ -31,6 +37,32 @@ class EntityDeleter {
       $storage->delete($entities);
 
       usleep(5000);
+    }
+  }
+
+  public function deleteAllEntitiesOfTypeGenerator(string $entityTypeId): \Generator {
+    $storage = $this->entityTypeManager->getStorage($entityTypeId);
+
+    $currentIndex = 0;
+    $chunkSize = 100;
+
+    $entityQuery = $storage->getQuery()
+      ->accessCheck(FALSE);
+
+    while (
+      $contentIds = $entityQuery
+        ->range(0, $chunkSize)
+        ->execute()
+    ) {
+      $entities = $storage->loadMultiple($contentIds);
+      $entityCount = count($entities);
+      $storage->delete($entities);
+
+      $currentIndex += $chunkSize;
+
+      usleep(5000);
+
+      yield $entityCount;
     }
   }
 

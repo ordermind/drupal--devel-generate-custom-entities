@@ -29,6 +29,20 @@ class EntityGenerator {
     }
   }
 
+  public function generateEntitiesGenerator(EntityGenerationOptions $options): \Generator {
+    $chunkSize = 100;
+
+    for ($i = 0, $imax = $options->getNumberOfEntities(); $i < $imax; $i++) {
+      $this->generateSingleEntity($options, $i + 1);
+
+      if ($i % $chunkSize === 0) {
+        usleep(5000);
+      }
+
+      yield 1;
+    }
+  }
+
   public function generateSingleEntity(EntityGenerationOptions $options, int $currentNumber): void {
     $storage = $this->entityTypeManager->getStorage($options->getEntityTypeId());
 
