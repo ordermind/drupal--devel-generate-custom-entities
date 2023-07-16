@@ -34,19 +34,21 @@ class EntityGeneratorWebBatchStrategy implements EntityGeneratorStrategyInterfac
   }
 
   public function generateEntities(EntityGenerationOptions $options): void {
-    // If this is run via drush then this operation is already run in the
-    // DevelGenerateCustomEntitiesDevelGenerate::validateDrushParams().
-    if (!$options->isDrush()) {
-      // Setup the batch operations and save the variables.
-      $operations[] = ['devel_generate_custom_entities_operation',
-        [$this, 'batchContentPreEntity', $options],
-      ];
-    }
+    // Setup the batch operations and save the variables.
+    $operations[] = ['devel_generate_custom_entities_operation',
+      [$this, 'batchContentPreEntity', $options],
+    ];
 
     // Add the deleteExisting operation.
     if ($options->isDeleteEntitiesBeforeCreation()) {
+      for ($i = 0, $imax = $this->entityDeleter->countEntitiesToDelete($options->getEntityTypeId()); $i < $imax; $i++) {
+        $operations[] = ['devel_generate_custom_entities_operation',
+          [$this, 'batchContentDeleteExisting', $options],
+        ];
+      }
+
       $operations[] = ['devel_generate_custom_entities_operation',
-        [$this, 'batchContentDeleteExisting', $options],
+          [$this, 'batchPrintDeleteSuccessMessage', $options],
       ];
     }
 
@@ -63,12 +65,10 @@ class EntityGeneratorWebBatchStrategy implements EntityGeneratorStrategyInterfac
       'operations' => $operations,
       'finished' => 'devel_generate_custom_entities_batch_finished',
       'file' => $this->extensionPathResolver->getPath('module', 'devel_generate_custom_entities') . '/devel_generate_custom_entities.batch.inc',
+      'progressive' => TRUE,
     ];
 
     batch_set($batch);
-    if ($options->isDrush()) {
-      drush_backend_batch_process();
-    }
   }
 
   public function batchContentPreEntity(EntityGenerationOptions $options, array|\ArrayObject &$context) {
@@ -77,30 +77,23 @@ class EntityGeneratorWebBatchStrategy implements EntityGeneratorStrategyInterfac
   }
 
   public function batchContentDeleteExisting(EntityGenerationOptions $options, array|\ArrayObject &$context) {
-    if ($options->isDrush()) {
-      $this->entityDeleter->deleteAllEntitiesOfType($options->getEntityTypeId());
-    }
-    else {
-      $options = EntityGenerationOptions::fromArray($context['results']);
-      $this->entityDeleter->deleteAllEntitiesOfType($options->getEntityTypeId());
-    }
+    $options = EntityGenerationOptions::fromArray($context['results']);
+    $this->entityDeleter->deleteFirstEntityOfType($options->getEntityTypeId());
+  }
 
+  public function batchPrintDeleteSuccessMessage(EntityGenerationOptions $options, array|\ArrayObject &$context) {
     $this->messenger->addMessage($this->t('Old entities have been deleted.'));
   }
 
   public function batchContentAddEntity(EntityGenerationOptions $options, array|\ArrayObject &$context) {
     if (!isset($context['results']['currentNumber'])) {
       $context['results']['currentNumber'] = 0;
+
     }
     $context['results']['currentNumber']++;
 
-    if ($options->isDrush()) {
-      $this->entityGenerator->generateSingleEntity($options, $context['results']['currentNumber']);
-    }
-    else {
-      $options = EntityGenerationOptions::fromArray($context['results']);
-      $this->entityGenerator->generateSingleEntity($options, $context['results']['currentNumber']);
-    }
+    $options = EntityGenerationOptions::fromArray($context['results']);
+    $this->entityGenerator->generateSingleEntity($options, $context['results']['currentNumber']);
   }
 
   public function printBatchFinishedMessage(bool $success, int $numCreated): void {

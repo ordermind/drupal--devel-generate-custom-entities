@@ -66,4 +66,17 @@ class EntityDeleter {
     }
   }
 
+  public function deleteFirstEntityOfType(string $entityTypeId): void {
+    $storage = $this->entityTypeManager->getStorage($entityTypeId);
+    $entityIds = $storage->getQuery()->accessCheck(FALSE)->range(0, 1)->execute();
+
+    if (!$entityIds) {
+      return;
+    }
+
+    $entities = $storage->loadMultiple($entityIds);
+
+    $storage->delete($entities);
+  }
+
 }

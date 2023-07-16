@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\devel_generate_custom_entities\Commands;
 
 use Consolidation\AnnotatedCommand\CommandData;
@@ -41,7 +43,7 @@ class DevelGenerateCommand extends BaseCommand {
     array_shift($args);
 
     /** @var DevelGenerateBaseInterface $instance */
-    $instance = $manager->createInstance($args['entity_type'], []);
+    $instance = $manager->createInstance($args['entity_type']);
     $this->setPluginInstance($instance);
     $parameters = $instance->validateDrushParams($args, $commandData->input()->getOptions());
     $this->setParameters($parameters);
