@@ -12,7 +12,7 @@ use Drupal\devel_generate_custom_entities\Deleter\EntityDeleter;
 use Drupal\devel_generate_custom_entities\Generator\EntityGenerator;
 use Drupal\devel_generate_custom_entities\ValueObject\EntityGenerationOptions;
 
-class EntityGeneratorWithBatchStrategy implements EntityGeneratorStrategyInterface {
+class EntityGeneratorWebBatchStrategy implements EntityGeneratorStrategyInterface {
   use StringTranslationTrait;
   use DependencySerializationTrait;
 
