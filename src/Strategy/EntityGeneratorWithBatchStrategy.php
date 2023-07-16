@@ -35,13 +35,6 @@ class EntityGeneratorWithBatchStrategy implements EntityGeneratorStrategyInterfa
     $this->entityDeleter = $entityDeleter;
   }
 
-  /**
-   * {@inheritDoc}
-   */
-  public static function getIdentifier(): string {
-    return 'with_batch';
-  }
-
   public function generateEntities(EntityGenerationOptions $options): void {
     // If it is drushBatch then this operation is already run in the
     // DevelGenerateCustomEntitiesDevelGenerate::validateDrushParams().

@@ -2,17 +2,48 @@
 
 declare(strict_types=1);
 
-namespace Drupal\devel_generate_custom_entities\Concerns;
+namespace Drupal\devel_generate_custom_entities\Plugin\DevelGenerate;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\devel_generate_custom_entities\Factory\EntityGeneratorStrategyFactory;
+use Drupal\devel_generate\DevelGenerateBase;
 use Drupal\devel_generate_custom_entities\Strategy\EntityGeneratorStrategyInterface;
 use Drupal\devel_generate_custom_entities\Strategy\EntityGeneratorWithBatchStrategy;
 use Drupal\devel_generate_custom_entities\Strategy\EntityGeneratorWithoutBatchStrategy;
 use Drupal\devel_generate_custom_entities\ValueObject\EntityGenerationOptions;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
-trait DevelGeneratePluginTrait {
+abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements ContainerFactoryPluginInterface {
+  protected EntityGeneratorWithBatchStrategy $withBatchStrategy;
+  protected EntityGeneratorWithoutBatchStrategy $withoutBatchStrategy;
+  protected AccountProxyInterface $currentUser;
+
+  public function __construct(
+    array $configuration,
+    string $plugin_id,
+    array $plugin_definition,
+    EntityGeneratorWithBatchStrategy $withBatchStrategy,
+    EntityGeneratorWithoutBatchStrategy $withoutBatchStrategy,
+    AccountProxyInterface $currentUser
+  ) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+
+    $this->withBatchStrategy = $withBatchStrategy;
+    $this->withoutBatchStrategy = $withoutBatchStrategy;
+    $this->currentUser = $currentUser;
+  }
+
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('devel_generate_custom_entities.strategy_with_batch'),
+      $container->get('devel_generate_custom_entities.strategy_without_batch'),
+      $container->get('current_user')
+    );
+  }
 
   abstract protected function getEntityTypeId(): string;
 
@@ -27,10 +58,6 @@ trait DevelGeneratePluginTrait {
    * @see EntityGenerationOptions
    */
   abstract protected function getLabelPattern(): string;
-
-  abstract protected function getCurrentUser(): AccountProxyInterface;
-
-  abstract protected function getStrategyFactory(): EntityGeneratorStrategyFactory;
 
   /**
    * {@inheritdoc}
@@ -65,7 +92,7 @@ trait DevelGeneratePluginTrait {
       $this->getBundleNames(),
       $num,
       $deleteExisting,
-      (int) $this->getCurrentUser()->id()
+      (int) $this->currentUser->id()
     );
 
     $strategy = $this->getStrategy($num);
@@ -87,10 +114,10 @@ trait DevelGeneratePluginTrait {
 
   protected function getStrategy(int $num): EntityGeneratorStrategyInterface {
     if ($num > $this->getSetting('batch_minimum_limit')) {
-      return $this->getStrategyFactory()->createStrategy(EntityGeneratorWithBatchStrategy::getIdentifier());
+      return $this->withBatchStrategy;
     }
 
-    return $this->getStrategyFactory()->createStrategy(EntityGeneratorWithoutBatchStrategy::getIdentifier());
+    return $this->withoutBatchStrategy;
   }
 
 }

@@ -1,18 +1,25 @@
 services:
   devel_generate_custom_entities.entity_generator:
-    class: Drupal\devel_generate_custom_entities\EntityGeneration\EntityGenerator
+    class: Drupal\devel_generate_custom_entities\Generator\EntityGenerator
     arguments:
       - '@entity_type.manager'
 
   devel_generate_custom_entities.entity_deleter:
-    class: Drupal\devel_generate_custom_entities\EntityGeneration\EntityDeleter
+    class: Drupal\devel_generate_custom_entities\Deleter\EntityDeleter
     arguments:
       - '@entity_type.manager'
 
-  devel_generate_custom_entities.strategy_factory:
-    class: Drupal\devel_generate_custom_entities\Factory\EntityGeneratorStrategyFactory
+  devel_generate_custom_entities.strategy_with_batch:
+    class: Drupal\devel_generate_custom_entities\Strategy\EntityGeneratorWithBatchStrategy
     arguments:
       - '@messenger'
       - '@extension.path.resolver'
+      - '@devel_generate_custom_entities.entity_generator'
+      - '@devel_generate_custom_entities.entity_deleter'
+
+  devel_generate_custom_entities.strategy_without_batch:
+    class: Drupal\devel_generate_custom_entities\Strategy\EntityGeneratorWithoutBatchStrategy
+    arguments:
+      - '@messenger'
       - '@devel_generate_custom_entities.entity_generator'
       - '@devel_generate_custom_entities.entity_deleter'

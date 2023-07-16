@@ -8,8 +8,6 @@ use Drupal\devel_generate_custom_entities\ValueObject\EntityGenerationOptions;
 
 interface EntityGeneratorStrategyInterface {
 
-  public static function getIdentifier(): string;
-
   public function generateEntities(EntityGenerationOptions $options): void;
 
 }

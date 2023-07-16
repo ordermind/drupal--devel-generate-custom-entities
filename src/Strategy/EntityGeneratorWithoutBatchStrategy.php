@@ -27,13 +27,6 @@ class EntityGeneratorWithoutBatchStrategy implements EntityGeneratorStrategyInte
     $this->entityDeleter = $entityDeleter;
   }
 
-  /**
-   * {@inheritDoc}
-   */
-  public static function getIdentifier(): string {
-    return 'without_batch';
-  }
-
   public function generateEntities(EntityGenerationOptions $options): void {
     if ($options->isDeleteEntitiesBeforeCreation()) {
       $this->deleteExistingEntities($options->getEntityTypeId());
