@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @file
  * Provides common batch functions for every DevelGeneratePlugin.
