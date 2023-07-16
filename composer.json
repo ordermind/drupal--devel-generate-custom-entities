@@ -1,13 +1,6 @@
 {
     "name": "drupal/devel_custom_entity_generation",
     "type": "drupal-module--tengstrom",
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "git@github.com:ordermind/drupal--devel-custom-entity-generation.git",
-            "no-api": true
-        }
-    ],
     "require": {
         "drupal/core": "^9.4 || ^10",
         "drupal/devel": "^5.1"
