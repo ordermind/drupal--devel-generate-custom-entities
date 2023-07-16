@@ -6,5 +6,6 @@ core_version_requirement: '^9 || ^10'
 
 dependencies:
   - devel_generate:devel_generate
+  - drush_batch_progressbar:drush_batch_progressbar
 
 version: 0.1.0
