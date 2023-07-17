@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\devel_generate_custom_entities\Commands;
+namespace Drupal\devel_generate_custom_entities\Drush\Commands;
 
 use Consolidation\AnnotatedCommand\CommandData;
 use Drupal\devel_generate\Commands\DevelGenerateCommands as BaseCommand;
