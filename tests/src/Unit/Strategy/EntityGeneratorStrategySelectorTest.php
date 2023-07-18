@@ -26,10 +26,15 @@ class EntityGeneratorStrategySelectorTest extends UnitTestCase {
     $webBatchStrategy = $this->prophesize(EntityGeneratorWebBatchStrategy::class)->reveal();
     $drushStrategy = $this->prophesize(EntityGeneratorDrushStrategy::class)->reveal();
 
-    $mockOptions = $this->prophesize(EntityGenerationOptions::class);
-    $mockOptions->getNumberOfEntities()->willReturn($numberOfEntities);
-    $mockOptions->isDrush()->willReturn($drush);
-    $options = $mockOptions->reveal();
+    $options = new EntityGenerationOptions(
+      $drush,
+      'entity_type',
+      'label pattern',
+      [],
+      $numberOfEntities,
+      TRUE,
+      1
+    );
 
     $selector = new EntityGeneratorStrategySelector($webStrategy, $webBatchStrategy, $drushStrategy);
     $strategy = $selector->selectStrategy($options, $batchMinimumLimit);
