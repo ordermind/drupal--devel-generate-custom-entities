@@ -29,7 +29,7 @@ services:
     arguments:
       - '@devel_generate_custom_entities.entity_generator'
       - '@devel_generate_custom_entities.entity_deleter'
-      - '@tengstrom_general.drush_output'
+      - '@tengstrom_general.drush_messenger'
 
   devel_generate_custom_entities.strategy_selector:
     class: Drupal\devel_generate_custom_entities\Strategy\EntityGeneratorStrategySelector
