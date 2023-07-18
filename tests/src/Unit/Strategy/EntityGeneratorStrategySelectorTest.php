@@ -39,10 +39,10 @@ class EntityGeneratorStrategySelectorTest extends UnitTestCase {
 
   public function provideTestSelectStrategy(): array {
     return [
-      [EntityGeneratorWebStrategy::class, 50, 10, false],
-      [EntityGeneratorWebBatchStrategy::class, 50, 100, false],
-      [EntityGeneratorDrushStrategy::class, 50, 10, true],
-      [EntityGeneratorDrushStrategy::class, 50, 100, true],
+      [EntityGeneratorWebStrategy::class,       50, 10,   false],
+      [EntityGeneratorWebBatchStrategy::class,  50, 100,  false],
+      [EntityGeneratorDrushStrategy::class,     50, 10,   true],
+      [EntityGeneratorDrushStrategy::class,     50, 100,  true],
     ];
   }
 }
