@@ -9,20 +9,16 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\devel_generate\DevelGenerateBase;
-use Drupal\devel_generate_custom_entities\Strategy\EntityGeneratorDrushStrategy;
-use Drupal\devel_generate_custom_entities\Strategy\EntityGeneratorStrategyInterface;
-use Drupal\devel_generate_custom_entities\Strategy\EntityGeneratorWebBatchStrategy;
-use Drupal\devel_generate_custom_entities\Strategy\EntityGeneratorWebStrategy;
+use Drupal\devel_generate_custom_entities\Strategy\EntityGeneratorStrategySelector;
 use Drupal\devel_generate_custom_entities\ValueObject\EntityGenerationOptions;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements ContainerFactoryPluginInterface {
   protected const DEFAULT_NUM = 100;
   protected const DEFAULT_DELETE_EXISTING = TRUE;
+  protected const DEFAULT_BATCH_MINIMUM_LIMIT = 50;
 
-  protected EntityGeneratorWebBatchStrategy $webBatchStrategy;
-  protected EntityGeneratorWebStrategy $webStrategy;
-  protected EntityGeneratorDrushStrategy $drushStrategy;
+  protected EntityGeneratorStrategySelector $strategySelector;
   protected AccountProxyInterface $currentUser;
   protected EntityTypeBundleInfoInterface $bundleInfo;
 
@@ -30,17 +26,13 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
     array $configuration,
     string $plugin_id,
     array $plugin_definition,
-    EntityGeneratorWebBatchStrategy $webBatchStrategy,
-    EntityGeneratorWebStrategy $webStrategy,
-    EntityGeneratorDrushStrategy $drushStrategy,
+    EntityGeneratorStrategySelector $strategySelector,
     AccountProxyInterface $currentUser,
     EntityTypeBundleInfoInterface $bundleInfo
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
-    $this->webBatchStrategy = $webBatchStrategy;
-    $this->webStrategy = $webStrategy;
-    $this->drushStrategy = $drushStrategy;
+    $this->strategySelector = $strategySelector;
     $this->currentUser = $currentUser;
     $this->bundleInfo = $bundleInfo;
   }
@@ -50,9 +42,7 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('devel_generate_custom_entities.strategy_web_batch'),
-      $container->get('devel_generate_custom_entities.strategy_web'),
-      $container->get('devel_generate_custom_entities.strategy_drush'),
+      $container->get('devel_generate_custom_entities.strategy_selector'),
       $container->get('current_user'),
       $container->get('entity_type.bundle.info')
     );
@@ -111,7 +101,7 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
       (int) $this->currentUser->id() ?: 1
     );
 
-    $strategy = $this->getStrategy($generationOptions);
+    $strategy = $this->strategySelector->selectStrategy($generationOptions, $this->getBatchMinimumLimit());
 
     $strategy->generateEntities($generationOptions);
   }
@@ -169,23 +159,11 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
     return array_combine(array_keys($bundles), array_map(fn (array $bundleInfo) => $bundleInfo['label'], $bundles));
   }
 
-  protected function getStrategy(EntityGenerationOptions $options): EntityGeneratorStrategyInterface {
-    if ($options->isDrush()) {
-      return $this->drushStrategy;
-    }
-
-    if ($options->getNumberOfEntities() >= $this->getBatchMinimumLimit()) {
-      return $this->webBatchStrategy;
-    }
-
-    return $this->webStrategy;
-  }
-
   /**
    * @return int The minimum number of generated entities to use batch processing for the web interface.
    */
   protected function getBatchMinimumLimit(): int {
-    return $this->getSetting('batch_minimum_limit') ?? 50;
+    return $this->getSetting('batch_minimum_limit') ?? static::DEFAULT_BATCH_MINIMUM_LIMIT;
   }
 
 }
