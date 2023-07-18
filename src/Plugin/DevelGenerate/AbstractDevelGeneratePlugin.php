@@ -55,38 +55,34 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
     );
   }
 
-  abstract protected function getEntityTypeId(): string;
-
-  /**
-   * @return string The label pattern as described in the EntityGenerationOptions.
-   *
-   * @see EntityGenerationOptions
-   */
-  abstract protected function getLabelPattern(): string;
-
   /**
    * {@inheritdoc}
    */
   public function settingsForm(array $form, FormStateInterface $form_state): array {
+    $form['entity_type'] = [
+      '#type' => 'hidden',
+      '#value' => $this->getEntityTypeId(),
+    ];
+
     $form['bundles'] = [
       '#type' => 'select2',
       '#title' => $this->t('For which bundles should entities be generated?'),
       '#multiple' => TRUE,
-      '#options' => $this->getBundleOptions(),
+      '#options' => $this->getBundleOptions($this->getEntityTypeId()),
       '#empty_option' => $this->t('- All -'),
     ];
 
     $form['num'] = [
       '#type' => 'textfield',
       '#title' => $this->t('How many entities would you like to generate?'),
-      '#default_value' => $this->getSetting('num'),
+      '#default_value' => $this->getSetting('num') ?? 100,
       '#size' => 10,
     ];
 
     $form['delete_existing'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('Delete all entities before generating new ones.'),
-      '#default_value' => $this->getSetting('delete_existing'),
+      '#title' => $this->t('Delete all existing entities before generating new ones.'),
+      '#default_value' => $this->getSetting('delete_existing') ?? TRUE,
     ];
 
     return $form;
@@ -97,14 +93,15 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
    */
   public function generate(array $values): void {
     $num = (int) $values['num'];
-    $bundles = array_values($values['bundles']) ?: array_keys($this->getBundleOptions());
+    $entityTypeId = $values['entity_type'];
+    $bundles = array_values($values['bundles']) ?: array_keys($this->getBundleOptions($entityTypeId));
     $deleteExisting = (bool) $values['delete_existing'];
     $drush = !empty($values['drush']);
 
     $generationOptions = new EntityGenerationOptions(
       $drush,
-      $this->getEntityTypeId(),
-      $this->getLabelPattern(),
+      $entityTypeId,
+      $this->getLabelPattern($entityTypeId),
       $bundles,
       $num,
       $deleteExisting,
@@ -120,29 +117,51 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
    * {@inheritdoc}
    */
   public function validateDrushParams(array $args, array $options = []): array {
+    $entityTypeId = $args['entity_type'];
+    $entityTypes = $this->getEntityTypeManager()->getDefinitions();
+    if (!isset($entityTypes[$entityTypeId])) {
+      throw new \InvalidArgumentException('Error generating entities: The entity type "' . $entityTypeId . '" does not exist!');
+    }
+
     $bundles = str_replace(' ', '', $options['bundles']) ?? '';
     $bundles = array_filter(explode(',', $bundles));
 
-    $invalidBundles = array_diff($bundles, array_keys($this->getBundleOptions()));
+    $invalidBundles = array_diff($bundles, array_keys($this->getBundleOptions($entityTypeId)));
     if ($invalidBundles) {
       throw new \InvalidArgumentException('Error generating entities: The bundle "' . reset($invalidBundles) . '" does not exist!');
     }
 
     $values = [
-      'num' => $args['num'],
+      'entity_type' => $entityTypeId,
       'bundles' => $bundles,
-      'delete_existing' => $options['delete-existing'],
+      'num' => $args['num'],
+      'delete_existing' => $options['kill'],
       'drush' => TRUE,
     ];
 
     return $values;
   }
 
+  protected function getEntityTypeId(): string {
+    return $this->getPluginId();
+  }
+
+  /**
+   * @return string The label pattern as described in the EntityGenerationOptions.
+   *
+   * @see EntityGenerationOptions
+   */
+  protected function getLabelPattern(string $entityTypeId): string {
+    $entityType = $this->getEntityTypeManager()->getDefinition($entityTypeId);
+
+    return $entityType->getLabel() . ' #@num';
+  }
+
   /**
    * @return array<string, string>
    */
-  protected function getBundleOptions(): array {
-    $bundles = $this->bundleInfo->getBundleInfo($this->getEntityTypeId());
+  protected function getBundleOptions(string $entityTypeId): array {
+    $bundles = $this->bundleInfo->getBundleInfo($entityTypeId);
 
     return array_combine(array_keys($bundles), array_map(fn (array $bundleInfo) => $bundleInfo['label'], $bundles));
   }
@@ -152,11 +171,18 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
       return $this->drushStrategy;
     }
 
-    if ($options->getNumberOfEntities() > $this->getSetting('batch_minimum_limit')) {
+    if ($options->getNumberOfEntities() >= $this->getBatchMinimumLimit()) {
       return $this->webBatchStrategy;
     }
 
     return $this->webStrategy;
+  }
+
+  /**
+   * @return int The minimum number of generated entities to use batch processing for the web interface.
+   */
+  protected function getBatchMinimumLimit(): int {
+    return $this->getSetting('batch_minimum_limit') ?? 50;
   }
 
 }

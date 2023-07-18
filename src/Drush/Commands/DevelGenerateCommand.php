@@ -16,18 +16,19 @@ class DevelGenerateCommand extends BaseCommand {
    * @aliases genent, devel-generate-entities
    *
    * @param string $entity_type
+   *   The entity type
    * @param int $num
    *   Number of entities to generate.
    * @param array $options
    *   Array of options as described below.
    *
    * @option bundles Use only certain bundles for entity generation. Enter the machine name of the bundle and separate each bundle with a comma.
-   * @option delete-existing Delete all existing entities before generating new ones.
+   * @option kill Delete all existing entities before generating new ones.
    */
   public function entities(
     string $entity_type,
     $num = 1,
-    array $options = ['bundles' => '', 'delete-existing' => FALSE]
+    array $options = ['bundles' => '', 'kill' => FALSE]
   ) {
 
     $this->generate();
@@ -47,8 +48,13 @@ class DevelGenerateCommand extends BaseCommand {
     // The command name is the first argument but we do not need this.
     array_shift($args);
 
+    if ($manager->hasDefinition($args['entity_type'])) {
+      $instance = $manager->createInstance($args['entity_type']);
+    }
+    else {
+      $instance = $manager->createInstance('default_custom_entity');
+    }
     /** @var DevelGenerateBaseInterface $instance */
-    $instance = $manager->createInstance($args['entity_type']);
     $this->setPluginInstance($instance);
     $parameters = $instance->validateDrushParams($args, $commandData->input()->getOptions());
     $this->setParameters($parameters);
