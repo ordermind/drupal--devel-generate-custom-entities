@@ -17,6 +17,9 @@ use Drupal\devel_generate_custom_entities\ValueObject\EntityGenerationOptions;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements ContainerFactoryPluginInterface {
+  protected const DEFAULT_NUM = 100;
+  protected const DEFAULT_DELETE_EXISTING = TRUE;
+
   protected EntityGeneratorWebBatchStrategy $webBatchStrategy;
   protected EntityGeneratorWebStrategy $webStrategy;
   protected EntityGeneratorDrushStrategy $drushStrategy;
@@ -75,14 +78,14 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
     $form['num'] = [
       '#type' => 'textfield',
       '#title' => $this->t('How many entities would you like to generate?'),
-      '#default_value' => $this->getSetting('num') ?? 100,
+      '#default_value' => $this->getSetting('num') ?? static::DEFAULT_NUM,
       '#size' => 10,
     ];
 
     $form['delete_existing'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Delete all existing entities before generating new ones.'),
-      '#default_value' => $this->getSetting('delete_existing') ?? TRUE,
+      '#default_value' => $this->getSetting('delete_existing') ?? static::DEFAULT_DELETE_EXISTING,
     ];
 
     return $form;
@@ -92,10 +95,10 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
    * {@inheritdoc}
    */
   public function generate(array $values): void {
-    $num = (int) $values['num'];
-    $entityTypeId = $values['entity_type'];
-    $bundles = array_values($values['bundles']) ?: array_keys($this->getBundleOptions($entityTypeId));
-    $deleteExisting = (bool) $values['delete_existing'];
+    $num = (int) ($values['num'] ?? static::DEFAULT_NUM);
+    $entityTypeId = (string) $values['entity_type'];
+    $bundles = array_values((array) ($values['bundles'] ?? [])) ?: array_keys($this->getBundleOptions($entityTypeId));
+    $deleteExisting = (bool) ($values['delete_existing'] ?? static::DEFAULT_DELETE_EXISTING);
     $drush = !empty($values['drush']);
 
     $generationOptions = new EntityGenerationOptions(
