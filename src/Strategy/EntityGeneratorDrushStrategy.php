@@ -8,8 +8,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\devel_generate_custom_entities\Deleter\EntityDeleter;
 use Drupal\devel_generate_custom_entities\Generator\EntityGenerator;
 use Drupal\devel_generate_custom_entities\ValueObject\EntityGenerationOptions;
-use Drush\Drush;
-use Symfony\Component\Console\Formatter\OutputFormatterStyle;
+use Drupal\tengstrom_general\Drush\Output\StyledDrushOutput;
 use Symfony\Component\Console\Helper\ProgressBar;
 
 class EntityGeneratorDrushStrategy implements EntityGeneratorStrategyInterface {
@@ -17,29 +16,30 @@ class EntityGeneratorDrushStrategy implements EntityGeneratorStrategyInterface {
 
   protected EntityGenerator $entityGenerator;
   protected EntityDeleter $entityDeleter;
+  protected StyledDrushOutput $drushOutput;
 
   public function __construct(
     EntityGenerator $entityGenerator,
     EntityDeleter $entityDeleter,
+    StyledDrushOutput $drushOutput
   ) {
     $this->entityGenerator = $entityGenerator;
     $this->entityDeleter = $entityDeleter;
+    $this->drushOutput = $drushOutput;
   }
 
   public function generateEntities(EntityGenerationOptions $options): void {
-    $this->addOutputFormatterStyles();
-
     if ($options->isDeleteEntitiesBeforeCreation()) {
       $this->deleteExistingEntities($options->getEntityTypeId());
-      Drush::output()->writeln('');
+      $this->drushOutput->blankLine();
     }
 
     $this->createNewEntities($options);
   }
 
   protected function deleteExistingEntities(string $entityTypeId): void {
-    $this->printNoticeMessage($this->t('Deleting old entities...')->__toString());
-    $progressBar = new ProgressBar(Drush::output(), $this->entityDeleter->countEntitiesToDelete($entityTypeId));
+    $this->drushOutput->notice($this->t('Deleting old entities...')->__toString());
+    $progressBar = new ProgressBar($this->drushOutput->getInstance(), $this->entityDeleter->countEntitiesToDelete($entityTypeId));
     $progressBar->start();
 
     foreach ($this->entityDeleter->deleteAllEntitiesOfTypeGenerator($entityTypeId) as $deletedCount) {
@@ -47,15 +47,15 @@ class EntityGeneratorDrushStrategy implements EntityGeneratorStrategyInterface {
     }
 
     $progressBar->finish();
-    Drush::output()->writeln('');
+    $this->drushOutput->blankLine();
 
-    $this->printSuccessMessage($this->t('Old entities have been deleted.')->__toString());
+    $this->drushOutput->success($this->t('Old entities have been deleted.')->__toString());
   }
 
   protected function createNewEntities(EntityGenerationOptions $options): void {
-    $this->printNoticeMessage($this->t('Creating new entities...')->__toString());
+    $this->drushOutput->notice($this->t('Creating new entities...')->__toString());
 
-    $progressBar = new ProgressBar(Drush::output(), $options->getNumberOfEntities());
+    $progressBar = new ProgressBar($this->drushOutput->getInstance(), $options->getNumberOfEntities());
     $progressBar->start();
 
     foreach ($this->entityGenerator->generateEntitiesGenerator($options) as $createdCount) {
@@ -63,29 +63,11 @@ class EntityGeneratorDrushStrategy implements EntityGeneratorStrategyInterface {
     }
 
     $progressBar->finish();
-    Drush::output()->writeln('');
+    $this->drushOutput->blankLine();
 
-    $this->printSuccessMessage($this->t('@num_entities created.', [
+    $this->drushOutput->success($this->t('@num_entities created.', [
       '@num_entities' => $this->formatPlural($options->getNumberOfEntities(), '1 entity', '@count entities'),
     ])->__toString());
-  }
-
-  protected function addOutputFormatterStyles(): void {
-    $successStyle = new OutputFormatterStyle('white', 'green', ['font-weight' => 'bold']);
-    $output = Drush::output();
-    $output->getFormatter()->setStyle('success', $successStyle);
-
-    $noticeStyle = new OutputFormatterStyle('white', 'cyan', ['font-weight' => 'bold']);
-    $output = Drush::output();
-    $output->getFormatter()->setStyle('notice', $noticeStyle);
-  }
-
-  protected function printNoticeMessage(string $message): void {
-    Drush::output()->writeln('<notice>[notice]</notice> ' . $message);
-  }
-
-  protected function printSuccessMessage(string $message): void {
-    Drush::output()->writeln('<success>[success]</success> ' . $message);
   }
 
 }
