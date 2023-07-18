@@ -68,6 +68,14 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
    * {@inheritdoc}
    */
   public function settingsForm(array $form, FormStateInterface $form_state): array {
+    $form['bundles'] = [
+      '#type' => 'select2',
+      '#title' => $this->t('For which bundles should entities be generated?'),
+      '#multiple' => TRUE,
+      '#options' => $this->getBundleOptions(),
+      '#empty_option' => $this->t('- All -'),
+    ];
+
     $form['num'] = [
       '#type' => 'textfield',
       '#title' => $this->t('How many entities would you like to generate?'),
@@ -89,6 +97,7 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
    */
   public function generate(array $values): void {
     $num = (int) $values['num'];
+    $bundles = array_values($values['bundles']) ?: array_keys($this->getBundleOptions());
     $deleteExisting = (bool) $values['delete_existing'];
     $drush = !empty($values['drush']);
 
@@ -96,7 +105,7 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
       $drush,
       $this->getEntityTypeId(),
       $this->getLabelPattern(),
-      $this->getBundleNames(),
+      $bundles,
       $num,
       $deleteExisting,
       (int) $this->currentUser->id() ?: 1
@@ -111,8 +120,17 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
    * {@inheritdoc}
    */
   public function validateDrushParams(array $args, array $options = []): array {
+    $bundles = str_replace(' ', '', $options['bundles']) ?? '';
+    $bundles = array_filter(explode(',', $bundles));
+
+    $invalidBundles = array_diff($bundles, array_keys($this->getBundleOptions()));
+    if ($invalidBundles) {
+      throw new \InvalidArgumentException('Error generating entities: The bundle "' . reset($invalidBundles) . '" does not exist!');
+    }
+
     $values = [
       'num' => $args['num'],
+      'bundles' => $bundles,
       'delete_existing' => $options['delete-existing'],
       'drush' => TRUE,
     ];
@@ -121,12 +139,12 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
   }
 
   /**
-   * @return string[] array of bundles names to generate entities for.
+   * @return array<string, string>
    */
-  protected function getBundleNames(): array {
+  protected function getBundleOptions(): array {
     $bundles = $this->bundleInfo->getBundleInfo($this->getEntityTypeId());
 
-    return array_keys($bundles);
+    return array_combine(array_keys($bundles), array_map(fn (array $bundleInfo) => $bundleInfo['label'], $bundles));
   }
 
   protected function getStrategy(EntityGenerationOptions $options): EntityGeneratorStrategyInterface {

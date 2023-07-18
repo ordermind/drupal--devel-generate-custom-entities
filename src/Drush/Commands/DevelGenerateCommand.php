@@ -17,13 +17,18 @@ class DevelGenerateCommand extends BaseCommand {
    *
    * @param string $entity_type
    * @param int $num
-   *   Number of vocabularies to generate.
+   *   Number of entities to generate.
    * @param array $options
    *   Array of options as described below.
    *
+   * @option bundles Use only certain bundles for entity generation. Enter the machine name of the bundle and separate each bundle with a comma.
    * @option delete-existing Delete all existing entities before generating new ones.
    */
-  public function entities(string $entity_type, $num = 1, array $options = ['delete-existing' => FALSE]) {
+  public function entities(
+    string $entity_type,
+    $num = 1,
+    array $options = ['bundles' => '', 'delete-existing' => FALSE]
+  ) {
 
     $this->generate();
   }
