@@ -44,20 +44,21 @@ class EntityGeneratorStrategySelectorTest extends UnitTestCase {
 
   public function provideTestSelectStrategy(): array {
     return [
-      // Test scenarios where isDrush() is true
-      [EntityGeneratorDrushStrategy::class, 50, 10, true],
-      [EntityGeneratorDrushStrategy::class, 50, 100, true],
+      // Test scenarios where isDrush() is true.
+      [EntityGeneratorDrushStrategy::class, 50, 10, TRUE],
+      [EntityGeneratorDrushStrategy::class, 50, 100, TRUE],
 
-      // Test scenarios where isDrush() is false and numberOfEntities is below batchMinimumLimit
-      [EntityGeneratorWebStrategy::class, 50, 10, false],
-      [EntityGeneratorWebStrategy::class, 50, 49, false],
+      // Test scenarios where isDrush() is false and numberOfEntities is below batchMinimumLimit.
+      [EntityGeneratorWebStrategy::class, 50, 10, FALSE],
+      [EntityGeneratorWebStrategy::class, 50, 49, FALSE],
 
-      // Test scenarios where isDrush() is false and numberOfEntities is equal to batchMinimumLimit
-      [EntityGeneratorWebBatchStrategy::class, 50, 50, false],
+      // Test scenarios where isDrush() is false and numberOfEntities is equal to batchMinimumLimit.
+      [EntityGeneratorWebBatchStrategy::class, 50, 50, FALSE],
 
-      // Test scenarios where isDrush() is false and numberOfEntities is above batchMinimumLimit
-      [EntityGeneratorWebBatchStrategy::class, 50, 51, false],
-      [EntityGeneratorWebBatchStrategy::class, 50, 100, false],
+      // Test scenarios where isDrush() is false and numberOfEntities is above batchMinimumLimit.
+      [EntityGeneratorWebBatchStrategy::class, 50, 51, FALSE],
+      [EntityGeneratorWebBatchStrategy::class, 50, 100, FALSE],
     ];
   }
+
 }
