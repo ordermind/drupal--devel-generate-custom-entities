@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Drupal\Tests\devel_generate_custom_entities\Unit\Strategy;
+
 use Drupal\devel_generate_custom_entities\Strategy\EntityGeneratorDrushStrategy;
 use Drupal\devel_generate_custom_entities\Strategy\EntityGeneratorStrategySelector;
 use Drupal\devel_generate_custom_entities\Strategy\EntityGeneratorWebBatchStrategy;

@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace Drupal\devel_generate_custom_entities\Generator;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\devel_generate\DevelGenerateBase;
 use Drupal\devel_generate_custom_entities\ValueObject\EntityGenerationOptions;
 
 class EntityGenerator {
   protected EntityTypeManagerInterface $entityTypeManager;
+  protected TimeInterface $timeService;
 
   public function __construct(
-    EntityTypeManagerInterface $entityTypeManager
+    EntityTypeManagerInterface $entityTypeManager,
+    TimeInterface $timeService
   ) {
     $this->entityTypeManager = $entityTypeManager;
+    $this->timeService = $timeService;
   }
 
   public function generateEntities(EntityGenerationOptions $options): void {
@@ -51,7 +55,7 @@ class EntityGenerator {
       'uid'     => $options->getAuthorUid(),
       'label'    => str_replace('@num', (string) ($currentNumber), $options->getLabelPattern()),
       'status'  => 1,
-      'created' => \Drupal::time()->getRequestTime(),
+      'created' => $this->timeService->getRequestTime(),
     ];
 
     $entity = $storage->create($baseData);
