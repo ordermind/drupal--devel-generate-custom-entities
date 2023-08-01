@@ -11,15 +11,12 @@ use Drupal\devel_generate_custom_entities\Generator\EntityGenerator;
 use Drupal\devel_generate_custom_entities\ValueObject\EntityGenerationOptions;
 use Drupal\Tests\devel_generate_custom_entities\Unit\Fixtures\DummyEntity;
 use Drupal\Tests\UnitTestCase;
-use Ordermind\DrupalTengstromShared\Test\Concerns\AddsServicesToContainerDuringTest;
 use Ordermind\DrupalTengstromShared\Test\Fixtures\EntityStorage\EntityArrayStorage;
 use Ordermind\DrupalTengstromShared\Test\Fixtures\Factories\TestServiceContainerFactory;
-use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 
 class EntityGeneratorTest extends UnitTestCase {
   use ProphecyTrait;
-  use AddsServicesToContainerDuringTest;
 
   protected function setUp(): void {
     parent::setUp();
@@ -40,7 +37,7 @@ class EntityGeneratorTest extends UnitTestCase {
     $storage = EntityArrayStorage::createInstance($container, $entityType);
 
     $mockEntityTypeManager = $this->prophesize(EntityTypeManagerInterface::class);
-    $mockEntityTypeManager->getStorage(Argument::any())->willReturn($storage);
+    $mockEntityTypeManager->getStorage($entityType->id())->willReturn($storage);
     $mockEntityTypeManager->getDefinition($entityType->id())->willReturn($entityType);
     $entityTypeManager = $mockEntityTypeManager->reveal();
 

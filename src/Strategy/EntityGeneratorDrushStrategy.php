@@ -9,20 +9,24 @@ use Drupal\devel_generate_custom_entities\Deleter\EntityDeleter;
 use Drupal\devel_generate_custom_entities\Generator\EntityGenerator;
 use Drupal\devel_generate_custom_entities\ValueObject\EntityGenerationOptions;
 use Drupal\tengstrom_general\Drush\Output\DrushMessenger;
+use Drupal\tengstrom_general\Repository\EntityRepository;
 use Symfony\Component\Console\Helper\ProgressBar;
 
 class EntityGeneratorDrushStrategy implements EntityGeneratorStrategyInterface {
   use StringTranslationTrait;
 
+  protected EntityRepository $repository;
   protected EntityGenerator $entityGenerator;
   protected EntityDeleter $entityDeleter;
   protected DrushMessenger $drushMessenger;
 
   public function __construct(
+    EntityRepository $repository,
     EntityGenerator $entityGenerator,
     EntityDeleter $entityDeleter,
     DrushMessenger $drushMessenger
   ) {
+    $this->repository = $repository;
     $this->entityGenerator = $entityGenerator;
     $this->entityDeleter = $entityDeleter;
     $this->drushMessenger = $drushMessenger;
@@ -39,7 +43,7 @@ class EntityGeneratorDrushStrategy implements EntityGeneratorStrategyInterface {
 
   protected function deleteExistingEntities(string $entityTypeId): void {
     $this->drushMessenger->notice($this->t('Deleting old entities...')->__toString());
-    $progressBar = new ProgressBar($this->drushMessenger->getOutput(), $this->entityDeleter->countEntitiesToDelete($entityTypeId));
+    $progressBar = new ProgressBar($this->drushMessenger->getOutput(), $this->repository->countEntitiesOfType($entityTypeId));
     $progressBar->start();
 
     foreach ($this->entityDeleter->deleteAllEntitiesOfTypeGenerator($entityTypeId) as $deletedCount) {

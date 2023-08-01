@@ -11,6 +11,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\devel_generate_custom_entities\Deleter\EntityDeleter;
 use Drupal\devel_generate_custom_entities\Generator\EntityGenerator;
 use Drupal\devel_generate_custom_entities\ValueObject\EntityGenerationOptions;
+use Drupal\tengstrom_general\Repository\EntityRepository;
 
 class EntityGeneratorWebBatchStrategy implements EntityGeneratorStrategyInterface {
   use StringTranslationTrait;
@@ -18,17 +19,20 @@ class EntityGeneratorWebBatchStrategy implements EntityGeneratorStrategyInterfac
 
   protected MessengerInterface $messenger;
   protected ExtensionPathResolver $extensionPathResolver;
+  protected EntityRepository $repository;
   protected EntityGenerator $entityGenerator;
   protected EntityDeleter $entityDeleter;
 
   public function __construct(
     MessengerInterface $messenger,
     ExtensionPathResolver $extensionPathResolver,
+    EntityRepository $repository,
     EntityGenerator $entityGenerator,
     EntityDeleter $entityDeleter,
   ) {
     $this->messenger = $messenger;
     $this->extensionPathResolver = $extensionPathResolver;
+    $this->repository = $repository;
     $this->entityGenerator = $entityGenerator;
     $this->entityDeleter = $entityDeleter;
   }
@@ -41,7 +45,7 @@ class EntityGeneratorWebBatchStrategy implements EntityGeneratorStrategyInterfac
 
     // Add the deleteExisting operation.
     if ($options->isDeleteEntitiesBeforeCreation()) {
-      for ($i = 0, $imax = $this->entityDeleter->countEntitiesToDelete($options->getEntityTypeId()); $i < $imax; $i++) {
+      for ($i = 0, $imax = $this->repository->countEntitiesOfType($options->getEntityTypeId()); $i < $imax; $i++) {
         $operations[] = ['devel_generate_custom_entities_operation',
           [$this, 'batchContentDeleteExisting', $options],
         ];

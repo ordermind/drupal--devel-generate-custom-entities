@@ -5,35 +5,23 @@ declare(strict_types=1);
 namespace Drupal\devel_generate_custom_entities\Deleter;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\tengstrom_general\Repository\EntityRepository;
 
 class EntityDeleter {
 
   protected EntityTypeManagerInterface $entityTypeManager;
+  protected EntityRepository $repository;
 
-  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
+  public function __construct(EntityTypeManagerInterface $entityTypeManager, EntityRepository $repository) {
     $this->entityTypeManager = $entityTypeManager;
-  }
-
-  public function countEntitiesToDelete(string $entityTypeId): int {
-    $storage = $this->entityTypeManager->getStorage($entityTypeId);
-
-    return $storage->getQuery()->accessCheck(FALSE)->count()->execute();
+    $this->repository = $repository;
   }
 
   public function deleteAllEntitiesOfType(string $entityTypeId): void {
     $storage = $this->entityTypeManager->getStorage($entityTypeId);
-
     $chunkSize = 100;
 
-    $entityQuery = $storage->getQuery()
-      ->accessCheck(FALSE);
-
-    while (
-      $contentIds = $entityQuery
-        ->range(0, $chunkSize)
-        ->execute()
-    ) {
-      $entities = $storage->loadMultiple($contentIds);
+    foreach ($this->repository->fetchEntitiesOfType($entityTypeId, $chunkSize) as $entities) {
       $storage->delete($entities);
 
       usleep(5000);
@@ -46,18 +34,9 @@ class EntityDeleter {
     $currentIndex = 0;
     $chunkSize = 100;
 
-    $entityQuery = $storage->getQuery()
-      ->accessCheck(FALSE);
-
-    while (
-      $contentIds = $entityQuery
-        ->range(0, $chunkSize)
-        ->execute()
-    ) {
-      $entities = $storage->loadMultiple($contentIds);
+    foreach ($this->repository->fetchEntitiesOfType($entityTypeId, $chunkSize) as $entities) {
       $entityCount = count($entities);
       $storage->delete($entities);
-
       $currentIndex += $chunkSize;
 
       usleep(5000);
@@ -68,7 +47,7 @@ class EntityDeleter {
 
   public function deleteFirstEntityOfType(string $entityTypeId): void {
     $storage = $this->entityTypeManager->getStorage($entityTypeId);
-    $entityIds = $storage->getQuery()->accessCheck(FALSE)->range(0, 1)->execute();
+    $entityIds = iterator_to_array($this->repository->fetchEntityIdsOfType($entityTypeId, 1));
 
     if (!$entityIds) {
       return;
