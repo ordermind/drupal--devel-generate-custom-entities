@@ -47,15 +47,13 @@ class EntityDeleter {
 
   public function deleteFirstEntityOfType(string $entityTypeId): void {
     $storage = $this->entityTypeManager->getStorage($entityTypeId);
-    $entityIds = iterator_to_array($this->repository->fetchEntityIdsOfType($entityTypeId, 1));
+    $entity = $this->repository->fetchFirstEntityOfType($entityTypeId);
 
-    if (!$entityIds) {
+    if (!$entity) {
       return;
     }
 
-    $entities = $storage->loadMultiple($entityIds);
-
-    $storage->delete($entities);
+    $storage->delete([$entity]);
   }
 
 }
