@@ -30,7 +30,12 @@ class EntityGeneratorTest extends UnitTestCase {
     \Drupal::setContainer($container);
   }
 
-  public function testGenerateSingleEntity(): void {
+  /**
+   * @test
+   */
+  public function generateSingleEntity_saves_entity_in_storage(): void {
+    $expectedLabel = 'Test Type #1';
+    $expectedTime = 1690208874;
     $options = new EntityGenerationOptions(FALSE, 'test_type', 'Test Type #@num', ['bundle_1'], 0, FALSE, 1);
 
     $entityType = new EntityType([
@@ -50,7 +55,7 @@ class EntityGeneratorTest extends UnitTestCase {
     $entityTypeManager = $mockEntityTypeManager->reveal();
 
     $mockTimeService = $this->prophesize(Time::class);
-    $mockTimeService->getRequestTime()->willReturn(1690208874);
+    $mockTimeService->getRequestTime()->willReturn($expectedTime);
     $timeService = $mockTimeService->reveal();
 
     $this->addMultipleServices([
@@ -70,9 +75,12 @@ class EntityGeneratorTest extends UnitTestCase {
 
     $this->assertSame($options->getEntityTypeId(), $entity->getEntityType()->id());
     $this->assertSame($options->getEntityTypeId(), $entity->getEntityTypeId());
-    $this->assertSame(str_replace('@num', (string) $entity->id(), $options->getLabelPattern()), $entity->label());
-    $this->assertSame($options->getBundleNames(), [$entity->bundle()]);
-    $this->assertSame($options->getAuthorUid(), $entity->uid());
+    $this->assertSame(1, $entity->getId());
+    $this->assertSame($expectedLabel, $entity->getLabel());
+    $this->assertSame($options->getBundleNames(), [$entity->getBundle()]);
+    $this->assertSame($options->getAuthorUid(), $entity->getUid());
+    $this->assertSame(1, $entity->getStatus());
+    $this->assertSame($expectedTime, $entity->getCreated());
   }
 
 }

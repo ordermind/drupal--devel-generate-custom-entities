@@ -15,15 +15,28 @@ class DummyEntity extends EntityBase {
   protected int $status;
   protected int $created;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function bundle(): string {
+  public function getId(): int {
+    return $this->id;
+  }
+
+  public function getLabel(): string {
+    return $this->label;
+  }
+
+  public function getBundle(): string {
     return $this->bundle;
   }
 
-  public function uid(): ?int {
+  public function getUid(): ?int {
     return $this->uid;
+  }
+
+  public function getCreated(): int {
+    return $this->created;
+  }
+
+  public function getStatus(): int {
+    return $this->status;
   }
 
 }
