@@ -9,19 +9,19 @@ use Drupal\devel_generate_custom_entities\Deleter\EntityDeleter;
 use Drupal\devel_generate_custom_entities\Generator\EntityGenerator;
 use Drupal\devel_generate_custom_entities\ValueObject\EntityGenerationOptions;
 use Drupal\tengstrom_general\Drush\Output\DrushMessenger;
-use Drupal\tengstrom_general\Repository\EntityRepository;
+use Drupal\tengstrom_general\Repository\EntityRepositoryInterface;
 use Symfony\Component\Console\Helper\ProgressBar;
 
 class EntityGeneratorDrushStrategy implements EntityGeneratorStrategyInterface {
   use StringTranslationTrait;
 
-  protected EntityRepository $repository;
+  protected EntityRepositoryInterface $repository;
   protected EntityGenerator $entityGenerator;
   protected EntityDeleter $entityDeleter;
   protected DrushMessenger $drushMessenger;
 
   public function __construct(
-    EntityRepository $repository,
+    EntityRepositoryInterface $repository,
     EntityGenerator $entityGenerator,
     EntityDeleter $entityDeleter,
     DrushMessenger $drushMessenger

@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Drupal\devel_generate_custom_entities\Deleter;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\tengstrom_general\Repository\EntityRepository;
+use Drupal\tengstrom_general\Repository\EntityRepositoryInterface;
 
 class EntityDeleter {
 
   protected EntityTypeManagerInterface $entityTypeManager;
-  protected EntityRepository $repository;
+  protected EntityRepositoryInterface $repository;
 
-  public function __construct(EntityTypeManagerInterface $entityTypeManager, EntityRepository $repository) {
+  public function __construct(EntityTypeManagerInterface $entityTypeManager, EntityRepositoryInterface $repository) {
     $this->entityTypeManager = $entityTypeManager;
     $this->repository = $repository;
   }

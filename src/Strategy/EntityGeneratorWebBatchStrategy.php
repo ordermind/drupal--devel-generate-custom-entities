@@ -11,7 +11,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\devel_generate_custom_entities\Deleter\EntityDeleter;
 use Drupal\devel_generate_custom_entities\Generator\EntityGenerator;
 use Drupal\devel_generate_custom_entities\ValueObject\EntityGenerationOptions;
-use Drupal\tengstrom_general\Repository\EntityRepository;
+use Drupal\tengstrom_general\Repository\EntityRepositoryInterface;
 
 class EntityGeneratorWebBatchStrategy implements EntityGeneratorStrategyInterface {
   use StringTranslationTrait;
@@ -19,14 +19,14 @@ class EntityGeneratorWebBatchStrategy implements EntityGeneratorStrategyInterfac
 
   protected MessengerInterface $messenger;
   protected ExtensionPathResolver $extensionPathResolver;
-  protected EntityRepository $repository;
+  protected EntityRepositoryInterface $repository;
   protected EntityGenerator $entityGenerator;
   protected EntityDeleter $entityDeleter;
 
   public function __construct(
     MessengerInterface $messenger,
     ExtensionPathResolver $extensionPathResolver,
-    EntityRepository $repository,
+    EntityRepositoryInterface $repository,
     EntityGenerator $entityGenerator,
     EntityDeleter $entityDeleter,
   ) {

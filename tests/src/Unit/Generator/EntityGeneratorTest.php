@@ -50,7 +50,7 @@ class EntityGeneratorTest extends UnitTestCase {
    *
    * phpcs:disable Drupal.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
    */
-  public function generateEntities_saves_multiple_entity_in_storage(int $numberOfEntities): void {
+  public function generateEntities_saves_multiple_entities_in_storage(int $numberOfEntities): void {
     $expectedTime = 1690208874;
 
     $options = new EntityGenerationOptions(FALSE, 'test_type', 'Test Type #@num', ['bundle_1'], $numberOfEntities, FALSE, 1);

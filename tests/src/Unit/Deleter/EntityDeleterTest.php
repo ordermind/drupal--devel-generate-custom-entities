@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityType;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\devel_generate_custom_entities\Deleter\EntityDeleter;
 use Drupal\Tests\devel_generate_custom_entities\Unit\Fixtures\DummyEntity;
+use Drupal\Tests\devel_generate_custom_entities\Unit\Fixtures\TestEntityRepository;
 use Drupal\Tests\UnitTestCase;
 use Ordermind\DrupalTengstromShared\Test\Fixtures\EntityStorage\EntityArrayStorage;
 use Ordermind\DrupalTengstromShared\Test\Fixtures\Factories\TestServiceContainerFactory;
@@ -46,6 +47,10 @@ class EntityDeleterTest extends UnitTestCase {
   }
 
   protected function createEntities(EntityStorageInterface $storage, int $number): void {
+    if (!$number) {
+      return;
+    }
+
     foreach (xrange(1, $number) as $id) {
       $baseData = [
         'bundle' => 'bundle_1',
@@ -60,16 +65,76 @@ class EntityDeleterTest extends UnitTestCase {
     }
   }
 
-  public function testCountEntitiesToDelete(): void {
-    $expectedResult = 200;
+  /**
+   * @test
+   * @dataProvider provideNumberOfEntities
+   *
+   * phpcs:disable Drupal.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
+   */
+  public function deleteAllEntitiesOfType_deletes_all_entities_in_storage(int $numberOfEntities): void {
     $entityTypeManager = \Drupal::service('entity_type.manager');
     $storage = $entityTypeManager->getStorage('test_type');
-    $this->createEntities($storage, $expectedResult);
+    $this->createEntities($storage, $numberOfEntities);
 
-    $entityDeleter = new EntityDeleter($entityTypeManager);
-    $result = $entityDeleter->countEntitiesToDelete('test_type');
+    $repository = new TestEntityRepository($storage);
+    $deleter = new EntityDeleter($entityTypeManager, $repository);
 
-    $this->assertSame($expectedResult, $result);
+    $this->assertSame($numberOfEntities, $repository->countEntitiesOfType('test_type'));
+
+    $deleter->deleteAllEntitiesOfType('test_type');
+
+    $this->assertSame(0, $repository->countEntitiesOfType('test_type'));
+  }
+
+  /**
+   * @test
+   * @dataProvider provideNumberOfEntities
+   *
+   * phpcs:disable Drupal.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
+   */
+  public function deleteAllEntitiesOfTypeGenerator_deletes_all_entities_in_storage(int $numberOfEntities): void {
+    $entityTypeManager = \Drupal::service('entity_type.manager');
+    $storage = $entityTypeManager->getStorage('test_type');
+    $this->createEntities($storage, $numberOfEntities);
+
+    $repository = new TestEntityRepository($storage);
+    $deleter = new EntityDeleter($entityTypeManager, $repository);
+
+    $this->assertSame($numberOfEntities, $repository->countEntitiesOfType('test_type'));
+
+    iterator_to_array($deleter->deleteAllEntitiesOfTypeGenerator('test_type'));
+
+    $this->assertSame(0, $repository->countEntitiesOfType('test_type'));
+  }
+
+  public function provideNumberOfEntities(): array {
+    return [
+      [0],
+      [62],
+      [99],
+      [100],
+      [101],
+      [130],
+      [200],
+      [203],
+    ];
+  }
+
+  public function testDeleteFirstEntityOfType(): void {
+    $entityTypeManager = \Drupal::service('entity_type.manager');
+    $storage = $entityTypeManager->getStorage('test_type');
+    $this->createEntities($storage, 50);
+
+    $repository = new TestEntityRepository($storage);
+    $deleter = new EntityDeleter($entityTypeManager, $repository);
+
+    $this->assertSame(50, $repository->countEntitiesOfType('test_type'));
+
+    $deleter->deleteFirstEntityOfType('test_type');
+
+    $this->assertSame(49, $repository->countEntitiesOfType('test_type'));
+    $firstEntity = $repository->fetchFirstEntityOfType('test_type');
+    $this->assertSame(2, $firstEntity->id());
   }
 
 }
