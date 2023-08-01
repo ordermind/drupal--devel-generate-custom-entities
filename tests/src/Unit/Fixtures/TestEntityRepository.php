@@ -19,18 +19,17 @@ class TestEntityRepository implements EntityRepositoryInterface {
     return $this->storage->count();
   }
 
-  public function fetchEntityIdsOfType(string $entityTypeId, int $chunkSize): \Generator {
-    foreach ($this->fetchEntitiesOfType($entityTypeId, $chunkSize) as $entities) {
-      yield  array_map(fn (EntityInterface $entity) => $entity->id(), $entities);
-    }
+  public function fetchEntityIdsOfType(string $entityTypeId, int $offset = 0, int $chunkSize = 100): array {
+    return array_map(
+      fn (EntityInterface $entity) => $entity->id(),
+      $this->fetchEntitiesOfType($entityTypeId, $offset, $chunkSize)
+    );
   }
 
-  public function fetchEntitiesOfType(string $entityTypeId, int $chunkSize): \Generator {
+  public function fetchEntitiesOfType(string $entityTypeId, int $offset = 0, int $chunkSize = 100): array {
     $items = $this->storage->loadAll();
 
-    for ($i = 0; $i < count($items); $i += $chunkSize) {
-      yield array_slice($items, $i, $chunkSize);
-    }
+    return array_slice($items, $offset, $chunkSize);
   }
 
   public function fetchFirstEntityOfType(string $entityTypeId): ?EntityInterface {

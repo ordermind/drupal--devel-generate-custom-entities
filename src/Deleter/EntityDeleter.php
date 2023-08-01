@@ -21,7 +21,7 @@ class EntityDeleter {
     $storage = $this->entityTypeManager->getStorage($entityTypeId);
     $chunkSize = 100;
 
-    foreach ($this->repository->fetchEntitiesOfType($entityTypeId, $chunkSize) as $entities) {
+    while ($entities = $this->repository->fetchEntitiesOfType($entityTypeId, 0, $chunkSize)) {
       $storage->delete($entities);
 
       usleep(5000);
@@ -31,13 +31,11 @@ class EntityDeleter {
   public function deleteAllEntitiesOfTypeGenerator(string $entityTypeId): \Generator {
     $storage = $this->entityTypeManager->getStorage($entityTypeId);
 
-    $currentIndex = 0;
     $chunkSize = 100;
 
-    foreach ($this->repository->fetchEntitiesOfType($entityTypeId, $chunkSize) as $entities) {
+    while ($entities = $this->repository->fetchEntitiesOfType($entityTypeId, 0, $chunkSize)) {
       $entityCount = count($entities);
       $storage->delete($entities);
-      $currentIndex += $chunkSize;
 
       usleep(5000);
 
