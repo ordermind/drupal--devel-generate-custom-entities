@@ -21,6 +21,9 @@ class EntityGenerator {
     $this->timeService = $timeService;
   }
 
+  /**
+   * Generates entities all in one go.
+   */
   public function generateEntities(EntityGenerationOptions $options): void {
     $chunkSize = 100;
 
@@ -33,6 +36,11 @@ class EntityGenerator {
     }
   }
 
+  /**
+   * Generates entities using a generator.
+   *
+   * @return \Generator|int[] number of entities generated in the current iteration of the loop
+   */
   public function generateEntitiesGenerator(EntityGenerationOptions $options): \Generator {
     $chunkSize = 100;
 
@@ -47,6 +55,9 @@ class EntityGenerator {
     }
   }
 
+  /**
+   * Generates a single entity.
+   */
   public function generateSingleEntity(EntityGenerationOptions $options, int $currentNumber): void {
     $storage = $this->entityTypeManager->getStorage($options->getEntityTypeId());
 

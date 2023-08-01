@@ -24,22 +24,8 @@ class EntityGeneratorTest extends UnitTestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    $containerFactory = new TestServiceContainerFactory();
-    $container = $containerFactory->createWithBasicServices();
-
-    \Drupal::setContainer($container);
-  }
-
-  /**
-   * @test
-   */
-  public function generateSingleEntity_saves_entity_in_storage(): void {
-    $expectedLabel = 'Test Type #1';
-    $expectedTime = 1690208874;
-    $options = new EntityGenerationOptions(FALSE, 'test_type', 'Test Type #@num', ['bundle_1'], 0, FALSE, 1);
-
     $entityType = new EntityType([
-      'id' => $options->getEntityTypeId(),
+      'id' => 'test_type',
       'class' => DummyEntity::class,
       'entity_keys' => [
         'id' => 'id',
@@ -47,27 +33,116 @@ class EntityGeneratorTest extends UnitTestCase {
       ],
     ]);
 
-    $storage = EntityArrayStorage::createInstance(\Drupal::getContainer(), $entityType);
+    $containerFactory = new TestServiceContainerFactory();
+    $container = $containerFactory->createWithBasicServices();
+    \Drupal::setContainer($container);
+
+    $storage = EntityArrayStorage::createInstance($container, $entityType);
 
     $mockEntityTypeManager = $this->prophesize(EntityTypeManagerInterface::class);
     $mockEntityTypeManager->getStorage(Argument::any())->willReturn($storage);
     $mockEntityTypeManager->getDefinition($entityType->id())->willReturn($entityType);
     $entityTypeManager = $mockEntityTypeManager->reveal();
 
+    $container->set('entity_type.manager', $entityTypeManager);
+  }
+
+  /**
+   * @test
+   * @dataProvider provideNumberOfEntities
+   *
+   * phpcs:disable Drupal.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
+   */
+  public function generateEntities_saves_multiple_entity_in_storage(int $numberOfEntities): void {
+    $expectedTime = 1690208874;
+
+    $options = new EntityGenerationOptions(FALSE, 'test_type', 'Test Type #@num', ['bundle_1'], $numberOfEntities, FALSE, 1);
+
     $mockTimeService = $this->prophesize(Time::class);
     $mockTimeService->getRequestTime()->willReturn($expectedTime);
     $timeService = $mockTimeService->reveal();
 
-    $this->addMultipleServices([
-      'entity_type.manager' => $entityTypeManager,
-    ]);
+    $entityTypeManager = \Drupal::service('entity_type.manager');
+    $storage = $entityTypeManager->getStorage($options->getEntityTypeId());
+    /** @var \Ordermind\DrupalTengstromShared\Test\Fixtures\EntityStorage\EntityArrayStorage $storage */
 
-    $this->assertEquals($storage->count(), 0);
+    $this->assertEquals(0, $storage->count());
+
+    $entityGenerator = new EntityGenerator($entityTypeManager, $timeService);
+    $entityGenerator->generateEntities($options);
+
+    $this->assertEquals($numberOfEntities, $storage->count());
+  }
+
+  /**
+   * @test
+   * @dataProvider provideNumberOfEntities
+   *
+   * phpcs:disable Drupal.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
+   */
+  public function generateEntitiesGenerator_saves_multiple_entities_in_database(int $numberOfEntities): void {
+    $expectedTime = 1690208874;
+
+    $options = new EntityGenerationOptions(FALSE, 'test_type', 'Test Type #@num', ['bundle_1'], $numberOfEntities, FALSE, 1);
+
+    $mockTimeService = $this->prophesize(Time::class);
+    $mockTimeService->getRequestTime()->willReturn($expectedTime);
+    $timeService = $mockTimeService->reveal();
+
+    $entityTypeManager = \Drupal::service('entity_type.manager');
+    $storage = $entityTypeManager->getStorage($options->getEntityTypeId());
+    /** @var \Ordermind\DrupalTengstromShared\Test\Fixtures\EntityStorage\EntityArrayStorage $storage */
+
+    $this->assertEquals(0, $storage->count());
+
+    $entityGenerator = new EntityGenerator($entityTypeManager, $timeService);
+
+    $totalGeneratedCount = 0;
+    foreach ($entityGenerator->generateEntitiesGenerator($options) as $iterationGeneratedCount) {
+      $totalGeneratedCount += $iterationGeneratedCount;
+    }
+
+    $this->assertEquals($numberOfEntities, $totalGeneratedCount);
+    $this->assertEquals($numberOfEntities, $storage->count());
+  }
+
+  public function provideNumberOfEntities(): array {
+    return [
+      [0],
+      [1],
+      [50],
+      [100],
+      [150],
+      [200],
+    ];
+
+  }
+
+  /**
+   * @test
+   *
+   * phpcs:disable Drupal.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
+   */
+  public function generateSingleEntity_saves_single_entity_in_storage(): void {
+    $expectedLabel = 'Test Type #1';
+    $expectedTime = 1690208874;
+
+    $options = new EntityGenerationOptions(FALSE, 'test_type', 'Test Type #@num', ['bundle_1'], 0, FALSE, 1);
+
+    $mockTimeService = $this->prophesize(Time::class);
+    $mockTimeService->getRequestTime()->willReturn($expectedTime);
+    $timeService = $mockTimeService->reveal();
+
+    $entityTypeManager = \Drupal::service('entity_type.manager');
+    $storage = $entityTypeManager->getStorage($options->getEntityTypeId());
+    /** @var \Ordermind\DrupalTengstromShared\Test\Fixtures\EntityStorage\EntityArrayStorage $storage */
+
+    $this->assertEquals(0, $storage->count());
 
     $entityGenerator = new EntityGenerator($entityTypeManager, $timeService);
     $entityGenerator->generateSingleEntity($options, 1);
 
-    $this->assertEquals($storage->count(), 1);
+    $this->assertEquals(1, $storage->count());
 
     $entity = $storage->load(1);
     $this->assertInstanceOf(DummyEntity::class, $entity);
