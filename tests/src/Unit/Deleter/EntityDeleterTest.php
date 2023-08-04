@@ -8,10 +8,10 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityType;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\devel_generate_custom_entities\Deleter\EntityDeleter;
-use Drupal\Tests\tengstrom_general\Unit\Fixtures\TestEntityRepository;
+use Drupal\Tests\tengstrom_general\Unit\Fixtures\TestContentEntityRepository;
 use Drupal\Tests\UnitTestCase;
 use Ordermind\DrupalTengstromShared\Test\Fixtures\Entity\DummyEntity;
-use Ordermind\DrupalTengstromShared\Test\Fixtures\EntityStorage\EntityArrayStorage;
+use Ordermind\DrupalTengstromShared\Test\Fixtures\EntityStorage\ContentEntityArrayStorage;
 use Ordermind\DrupalTengstromShared\Test\Fixtures\Factories\TestServiceContainerFactory;
 use Prophecy\PhpUnit\ProphecyTrait;
 use function Ordermind\Helpers\Misc\xrange;
@@ -35,7 +35,7 @@ class EntityDeleterTest extends UnitTestCase {
     $container = $containerFactory->createWithBasicServices();
     \Drupal::setContainer($container);
 
-    $storage = EntityArrayStorage::createInstance($container, $entityType);
+    $storage = ContentEntityArrayStorage::createInstance($container, $entityType);
 
     $mockEntityTypeManager = $this->prophesize(EntityTypeManagerInterface::class);
     $mockEntityTypeManager->getStorage($entityType->id())->willReturn($storage);
@@ -75,7 +75,7 @@ class EntityDeleterTest extends UnitTestCase {
     $storage = $entityTypeManager->getStorage('test_type');
     $this->createEntities($storage, $numberOfEntities);
 
-    $repository = new TestEntityRepository($storage);
+    $repository = new TestContentEntityRepository($storage);
     $deleter = new EntityDeleter($entityTypeManager, $repository);
 
     $this->assertSame($numberOfEntities, $repository->countEntitiesOfType('test_type'));
@@ -96,7 +96,7 @@ class EntityDeleterTest extends UnitTestCase {
     $storage = $entityTypeManager->getStorage('test_type');
     $this->createEntities($storage, $numberOfEntities);
 
-    $repository = new TestEntityRepository($storage);
+    $repository = new TestContentEntityRepository($storage);
     $deleter = new EntityDeleter($entityTypeManager, $repository);
 
     $this->assertSame($numberOfEntities, $repository->countEntitiesOfType('test_type'));
@@ -124,7 +124,7 @@ class EntityDeleterTest extends UnitTestCase {
     $storage = $entityTypeManager->getStorage('test_type');
     $this->createEntities($storage, 50);
 
-    $repository = new TestEntityRepository($storage);
+    $repository = new TestContentEntityRepository($storage);
     $deleter = new EntityDeleter($entityTypeManager, $repository);
 
     $this->assertSame(50, $repository->countEntitiesOfType('test_type'));

@@ -11,7 +11,7 @@ use Drupal\devel_generate_custom_entities\Generator\EntityGenerator;
 use Drupal\devel_generate_custom_entities\ValueObject\EntityGenerationOptions;
 use Drupal\Tests\UnitTestCase;
 use Ordermind\DrupalTengstromShared\Test\Fixtures\Entity\DummyEntity;
-use Ordermind\DrupalTengstromShared\Test\Fixtures\EntityStorage\EntityArrayStorage;
+use Ordermind\DrupalTengstromShared\Test\Fixtures\EntityStorage\ContentEntityArrayStorage;
 use Ordermind\DrupalTengstromShared\Test\Fixtures\Factories\TestServiceContainerFactory;
 use Prophecy\PhpUnit\ProphecyTrait;
 
@@ -34,7 +34,7 @@ class EntityGeneratorTest extends UnitTestCase {
     $container = $containerFactory->createWithBasicServices();
     \Drupal::setContainer($container);
 
-    $storage = EntityArrayStorage::createInstance($container, $entityType);
+    $storage = ContentEntityArrayStorage::createInstance($container, $entityType);
 
     $mockEntityTypeManager = $this->prophesize(EntityTypeManagerInterface::class);
     $mockEntityTypeManager->getStorage($entityType->id())->willReturn($storage);
