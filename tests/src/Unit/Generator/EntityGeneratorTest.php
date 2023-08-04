@@ -9,8 +9,8 @@ use Drupal\Core\Entity\EntityType;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\devel_generate_custom_entities\Generator\EntityGenerator;
 use Drupal\devel_generate_custom_entities\ValueObject\EntityGenerationOptions;
-use Drupal\Tests\devel_generate_custom_entities\Unit\Fixtures\DummyEntity;
 use Drupal\Tests\UnitTestCase;
+use Ordermind\DrupalTengstromShared\Test\Fixtures\Entity\DummyEntity;
 use Ordermind\DrupalTengstromShared\Test\Fixtures\EntityStorage\EntityArrayStorage;
 use Ordermind\DrupalTengstromShared\Test\Fixtures\Factories\TestServiceContainerFactory;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -143,7 +143,7 @@ class EntityGeneratorTest extends UnitTestCase {
 
     $entity = $storage->load(1);
     $this->assertInstanceOf(DummyEntity::class, $entity);
-    /** @var \Drupal\Tests\devel_generate_custom_entities\Unit\Fixtures\DummyEntity $entity */
+    /** @var \Ordermind\DrupalTengstromShared\Test\Fixtures\Entity\DummyEntity $entity */
 
     $this->assertSame($options->getEntityTypeId(), $entity->getEntityType()->id());
     $this->assertSame($options->getEntityTypeId(), $entity->getEntityTypeId());

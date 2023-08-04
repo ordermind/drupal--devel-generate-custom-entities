@@ -8,13 +8,12 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityType;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\devel_generate_custom_entities\Deleter\EntityDeleter;
-use Drupal\Tests\devel_generate_custom_entities\Unit\Fixtures\DummyEntity;
 use Drupal\Tests\tengstrom_general\Unit\Fixtures\TestEntityRepository;
 use Drupal\Tests\UnitTestCase;
+use Ordermind\DrupalTengstromShared\Test\Fixtures\Entity\DummyEntity;
 use Ordermind\DrupalTengstromShared\Test\Fixtures\EntityStorage\EntityArrayStorage;
 use Ordermind\DrupalTengstromShared\Test\Fixtures\Factories\TestServiceContainerFactory;
 use Prophecy\PhpUnit\ProphecyTrait;
-
 use function Ordermind\Helpers\Misc\xrange;
 
 class EntityDeleterTest extends UnitTestCase {
