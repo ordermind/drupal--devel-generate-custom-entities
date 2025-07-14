@@ -44,7 +44,7 @@ class EntityGeneratorStrategySelectorTest extends UnitTestCase {
     $this->assertInstanceOf($expectedClass, $strategy);
   }
 
-  public function provideTestSelectStrategy(): array {
+  public static function provideTestSelectStrategy(): array {
     return [
       // Test scenarios where isDrush() is true.
       [EntityGeneratorDrushStrategy::class, 50, 10, TRUE],

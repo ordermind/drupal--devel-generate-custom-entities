@@ -9,7 +9,7 @@
         }
     ],
     "require": {
-        "drupal/core": "^9.4 || ^10",
+        "drupal/core": "^10 || ^11",
         "drupal/devel": "^5.1",
         "drupal/select2": "^1.13",
         "drupal/tengstrom_general": "dev-master",

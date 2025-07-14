@@ -2,7 +2,7 @@ name: Devel Custom Entity Generation
 type: module
 package: Tengström Modules
 description: 'Adds support for generating dummy content for custom entities'
-core_version_requirement: '^9 || ^10'
+core_version_requirement: '^10 || ^11'
 
 dependencies:
   - devel_generate:devel_generate
