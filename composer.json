@@ -11,7 +11,7 @@
     "require": {
         "drupal/core": "^10 || ^11",
         "drupal/devel": "^5.1",
-        "drupal/select2": "^1.13",
+        "drupal/select2": "^1.13 || ^2.0",
         "drupal/tengstrom_general": "dev-master",
         "ordermind/drupal--tengstrom-shared": "dev-master",
         "ordermind/php-helpers": "^2.0"
