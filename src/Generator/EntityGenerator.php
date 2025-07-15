@@ -5,23 +5,25 @@ declare(strict_types=1);
 namespace Drupal\devel_generate_custom_entities\Generator;
 
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\devel_generate\DevelGenerateBase;
+use Drupal\devel_generate\DevelGeneratePluginManagerInterface;
 use Drupal\devel_generate_custom_entities\ValueObject\EntityGenerationOptions;
 
 class EntityGenerator {
   protected EntityTypeManagerInterface $entityTypeManager;
   protected TimeInterface $timeService;
-  protected DevelGenerateBase $develGenerateService;
+  protected PluginManagerInterface $develGeneratePluginManager;
 
   public function __construct(
     EntityTypeManagerInterface $entityTypeManager,
     TimeInterface $timeService,
-    DevelGenerateBase $develGenerateService,
+    PluginManagerInterface $develGeneratePluginManager,
   ) {
     $this->entityTypeManager = $entityTypeManager;
     $this->timeService = $timeService;
-    $this->develGenerateService = $develGenerateService;
+    $this->develGeneratePluginManager = $develGeneratePluginManager;
   }
 
   /**
@@ -73,7 +75,12 @@ class EntityGenerator {
     ];
 
     $entity = $storage->create($baseData);
-    $this->develGenerateService->populateFields($entity);
+
+    // Create the plugin instance as needed.
+    /** @var \Drupal\devel_generate_custom_entities\Plugin\DevelGenerate\DefaultCustomEntityDevelGenerate $plugin */
+    $plugin = $this->develGeneratePluginManager->createInstance('default_custom_entity');
+    $plugin->populateFields($entity);
+
     $entity->save();
   }
 

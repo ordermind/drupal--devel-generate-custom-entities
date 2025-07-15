@@ -14,7 +14,7 @@ class EntityGeneratorStrategySelector {
   public function __construct(
     EntityGeneratorWebStrategy $webStrategy,
     EntityGeneratorWebBatchStrategy $webBatchStrategy,
-    EntityGeneratorDrushStrategy $drushStrategy
+    EntityGeneratorDrushStrategy $drushStrategy,
   ) {
     $this->webStrategy = $webStrategy;
     $this->webBatchStrategy = $webBatchStrategy;

@@ -24,7 +24,7 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
   protected EntityTypeBundleInfoInterface $bundleInfo;
 
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
-    $plugin = new static($configuration, $plugin_id, $plugin_definition);
+    $plugin = parent::create($container, $configuration, $plugin_id, $plugin_definition);
 
     $plugin->setStrategySelector($container->get('devel_generate_custom_entities.strategy_selector'));
     $plugin->setCurrentUser($container->get('current_user'));
