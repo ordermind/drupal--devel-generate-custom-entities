@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\devel_generate_custom_entities\Unit\Generator;
 
 use Drupal\Component\Datetime\Time;
+use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Entity\EntityType;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\devel_generate\DevelGenerateBase;
@@ -60,8 +61,12 @@ class EntityGeneratorTest extends UnitTestCase {
     $mockTimeService->getRequestTime()->willReturn($expectedTime);
     $timeService = $mockTimeService->reveal();
 
-    $mockDevelGeneratorService = $this->prophesize(DevelGenerateBase::class);
-    $develGeneratorService = $mockDevelGeneratorService->reveal();
+    $mockDevelGenerateService = $this->prophesize(DevelGenerateBase::class);
+    $develGenerateService = $mockDevelGenerateService->reveal();
+
+    $mockDevelGeneratePluginManager = $this->prophesize(PluginManagerInterface::class);
+    $mockDevelGeneratePluginManager->createInstance('default_custom_entity')->willReturn($develGenerateService);
+    $develGeneratePluginManager = $mockDevelGeneratePluginManager->reveal();
 
     $entityTypeManager = \Drupal::service('entity_type.manager');
     $storage = $entityTypeManager->getStorage($options->getEntityTypeId());
@@ -69,7 +74,7 @@ class EntityGeneratorTest extends UnitTestCase {
 
     $this->assertEquals(0, $storage->count());
 
-    $entityGenerator = new EntityGenerator($entityTypeManager, $timeService, $develGeneratorService);
+    $entityGenerator = new EntityGenerator($entityTypeManager, $timeService, $develGeneratePluginManager);
     $entityGenerator->generateEntities($options);
 
     $this->assertEquals($numberOfEntities, $storage->count());
@@ -90,8 +95,12 @@ class EntityGeneratorTest extends UnitTestCase {
     $mockTimeService->getRequestTime()->willReturn($expectedTime);
     $timeService = $mockTimeService->reveal();
 
-    $mockDevelGeneratorService = $this->prophesize(DevelGenerateBase::class);
-    $develGeneratorService = $mockDevelGeneratorService->reveal();
+    $mockDevelGenerateService = $this->prophesize(DevelGenerateBase::class);
+    $develGenerateService = $mockDevelGenerateService->reveal();
+
+    $mockDevelGeneratePluginManager = $this->prophesize(PluginManagerInterface::class);
+    $mockDevelGeneratePluginManager->createInstance('default_custom_entity')->willReturn($develGenerateService);
+    $develGeneratePluginManager = $mockDevelGeneratePluginManager->reveal();
 
     $entityTypeManager = \Drupal::service('entity_type.manager');
     $storage = $entityTypeManager->getStorage($options->getEntityTypeId());
@@ -99,7 +108,7 @@ class EntityGeneratorTest extends UnitTestCase {
 
     $this->assertEquals(0, $storage->count());
 
-    $entityGenerator = new EntityGenerator($entityTypeManager, $timeService, $develGeneratorService);
+    $entityGenerator = new EntityGenerator($entityTypeManager, $timeService, $develGeneratePluginManager);
 
     $totalGeneratedCount = 0;
     foreach ($entityGenerator->generateEntitiesGenerator($options) as $iterationGeneratedCount) {
@@ -137,8 +146,12 @@ class EntityGeneratorTest extends UnitTestCase {
     $mockTimeService->getRequestTime()->willReturn($expectedTime);
     $timeService = $mockTimeService->reveal();
 
-    $mockDevelGeneratorService = $this->prophesize(DevelGenerateBase::class);
-    $develGeneratorService = $mockDevelGeneratorService->reveal();
+    $mockDevelGenerateService = $this->prophesize(DevelGenerateBase::class);
+    $develGenerateService = $mockDevelGenerateService->reveal();
+
+    $mockDevelGeneratePluginManager = $this->prophesize(PluginManagerInterface::class);
+    $mockDevelGeneratePluginManager->createInstance('default_custom_entity')->willReturn($develGenerateService);
+    $develGeneratePluginManager = $mockDevelGeneratePluginManager->reveal();
 
     $entityTypeManager = \Drupal::service('entity_type.manager');
     $storage = $entityTypeManager->getStorage($options->getEntityTypeId());
@@ -146,7 +159,7 @@ class EntityGeneratorTest extends UnitTestCase {
 
     $this->assertEquals(0, $storage->count());
 
-    $entityGenerator = new EntityGenerator($entityTypeManager, $timeService, $develGeneratorService);
+    $entityGenerator = new EntityGenerator($entityTypeManager, $timeService, $develGeneratePluginManager);
     $entityGenerator->generateSingleEntity($options, 1);
 
     $this->assertEquals(1, $storage->count());

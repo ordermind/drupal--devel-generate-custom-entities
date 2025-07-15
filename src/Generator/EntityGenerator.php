@@ -7,8 +7,6 @@ namespace Drupal\devel_generate_custom_entities\Generator;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\devel_generate\DevelGenerateBase;
-use Drupal\devel_generate\DevelGeneratePluginManagerInterface;
 use Drupal\devel_generate_custom_entities\ValueObject\EntityGenerationOptions;
 
 class EntityGenerator {
