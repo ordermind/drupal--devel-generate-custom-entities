@@ -12,13 +12,16 @@ use Drupal\devel_generate_custom_entities\ValueObject\EntityGenerationOptions;
 class EntityGenerator {
   protected EntityTypeManagerInterface $entityTypeManager;
   protected TimeInterface $timeService;
+  protected DevelGenerateBase $develGenerateService;
 
   public function __construct(
     EntityTypeManagerInterface $entityTypeManager,
-    TimeInterface $timeService
+    TimeInterface $timeService,
+    DevelGenerateBase $develGenerateService,
   ) {
     $this->entityTypeManager = $entityTypeManager;
     $this->timeService = $timeService;
+    $this->develGenerateService = $develGenerateService;
   }
 
   /**
@@ -70,7 +73,7 @@ class EntityGenerator {
     ];
 
     $entity = $storage->create($baseData);
-    DevelGenerateBase::populateFields($entity);
+    $this->develGenerateService->populateFields($entity);
     $entity->save();
   }
 

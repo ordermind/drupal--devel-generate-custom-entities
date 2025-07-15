@@ -30,7 +30,7 @@ class EntityGenerationOptions {
     array $bundleNames,
     int $numberOfEntities,
     bool $deleteEntitiesBeforeCreation,
-    int $authorUid
+    int $authorUid,
   ) {
     if ($numberOfEntities < 0) {
       throw new \InvalidArgumentException('The "numberOfEntities" parameter must be a positive integer');

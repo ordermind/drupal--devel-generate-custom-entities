@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\devel_generate_custom_entities\Plugin\DevelGenerate;
 
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -28,7 +29,7 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
     array $plugin_definition,
     EntityGeneratorStrategySelector $strategySelector,
     AccountProxyInterface $currentUser,
-    EntityTypeBundleInfoInterface $bundleInfo
+    EntityTypeBundleInfoInterface $bundleInfo,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
@@ -46,6 +47,10 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
       $container->get('current_user'),
       $container->get('entity_type.bundle.info')
     );
+  }
+
+  protected function getEntityTypeManager(): EntityTypeManagerInterface {
+    return $this->entityTypeManager;
   }
 
   /**

@@ -7,6 +7,7 @@ namespace Drupal\Tests\devel_generate_custom_entities\Unit\Generator;
 use Drupal\Component\Datetime\Time;
 use Drupal\Core\Entity\EntityType;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\devel_generate\DevelGenerateBase;
 use Drupal\devel_generate_custom_entities\Generator\EntityGenerator;
 use Drupal\devel_generate_custom_entities\ValueObject\EntityGenerationOptions;
 use Drupal\Tests\UnitTestCase;
@@ -59,13 +60,16 @@ class EntityGeneratorTest extends UnitTestCase {
     $mockTimeService->getRequestTime()->willReturn($expectedTime);
     $timeService = $mockTimeService->reveal();
 
+    $mockDevelGeneratorService = $this->prophesize(DevelGenerateBase::class);
+    $develGeneratorService = $mockDevelGeneratorService->reveal();
+
     $entityTypeManager = \Drupal::service('entity_type.manager');
     $storage = $entityTypeManager->getStorage($options->getEntityTypeId());
     /** @var \Ordermind\DrupalTengstromShared\Test\Fixtures\EntityStorage\EntityArrayStorage $storage */
 
     $this->assertEquals(0, $storage->count());
 
-    $entityGenerator = new EntityGenerator($entityTypeManager, $timeService);
+    $entityGenerator = new EntityGenerator($entityTypeManager, $timeService, $develGeneratorService);
     $entityGenerator->generateEntities($options);
 
     $this->assertEquals($numberOfEntities, $storage->count());
@@ -86,13 +90,16 @@ class EntityGeneratorTest extends UnitTestCase {
     $mockTimeService->getRequestTime()->willReturn($expectedTime);
     $timeService = $mockTimeService->reveal();
 
+    $mockDevelGeneratorService = $this->prophesize(DevelGenerateBase::class);
+    $develGeneratorService = $mockDevelGeneratorService->reveal();
+
     $entityTypeManager = \Drupal::service('entity_type.manager');
     $storage = $entityTypeManager->getStorage($options->getEntityTypeId());
     /** @var \Ordermind\DrupalTengstromShared\Test\Fixtures\EntityStorage\EntityArrayStorage $storage */
 
     $this->assertEquals(0, $storage->count());
 
-    $entityGenerator = new EntityGenerator($entityTypeManager, $timeService);
+    $entityGenerator = new EntityGenerator($entityTypeManager, $timeService, $develGeneratorService);
 
     $totalGeneratedCount = 0;
     foreach ($entityGenerator->generateEntitiesGenerator($options) as $iterationGeneratedCount) {
@@ -130,13 +137,16 @@ class EntityGeneratorTest extends UnitTestCase {
     $mockTimeService->getRequestTime()->willReturn($expectedTime);
     $timeService = $mockTimeService->reveal();
 
+    $mockDevelGeneratorService = $this->prophesize(DevelGenerateBase::class);
+    $develGeneratorService = $mockDevelGeneratorService->reveal();
+
     $entityTypeManager = \Drupal::service('entity_type.manager');
     $storage = $entityTypeManager->getStorage($options->getEntityTypeId());
     /** @var \Ordermind\DrupalTengstromShared\Test\Fixtures\EntityStorage\EntityArrayStorage $storage */
 
     $this->assertEquals(0, $storage->count());
 
-    $entityGenerator = new EntityGenerator($entityTypeManager, $timeService);
+    $entityGenerator = new EntityGenerator($entityTypeManager, $timeService, $develGeneratorService);
     $entityGenerator->generateSingleEntity($options, 1);
 
     $this->assertEquals(1, $storage->count());
