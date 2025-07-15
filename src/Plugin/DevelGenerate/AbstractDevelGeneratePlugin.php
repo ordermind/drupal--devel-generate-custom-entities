@@ -23,30 +23,26 @@ abstract class AbstractDevelGeneratePlugin extends DevelGenerateBase implements 
   protected AccountProxyInterface $currentUser;
   protected EntityTypeBundleInfoInterface $bundleInfo;
 
-  public function __construct(
-    array $configuration,
-    string $plugin_id,
-    array $plugin_definition,
-    EntityGeneratorStrategySelector $strategySelector,
-    AccountProxyInterface $currentUser,
-    EntityTypeBundleInfoInterface $bundleInfo,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
+    $plugin = new static($configuration, $plugin_id, $plugin_definition);
 
-    $this->strategySelector = $strategySelector;
-    $this->currentUser = $currentUser;
-    $this->bundleInfo = $bundleInfo;
+    $plugin->setStrategySelector($container->get('devel_generate_custom_entities.strategy_selector'));
+    $plugin->setCurrentUser($container->get('current_user'));
+    $plugin->setBundleInfo($container->get('entity_type.bundle.info'));
+
+    return $plugin;
   }
 
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('devel_generate_custom_entities.strategy_selector'),
-      $container->get('current_user'),
-      $container->get('entity_type.bundle.info')
-    );
+  private function setStrategySelector(EntityGeneratorStrategySelector $strategySelector) {
+    $this->strategySelector = $strategySelector;
+  }
+
+  private function setCurrentUser(AccountProxyInterface $currentUser) {
+    $this->currentUser = $currentUser;
+  }
+
+  private function setBundleInfo(EntityTypeBundleInfoInterface $bundleInfo) {
+    $this->bundleInfo = $bundleInfo;
   }
 
   protected function getEntityTypeManager(): EntityTypeManagerInterface {
