@@ -106,7 +106,7 @@ class EntityDeleterTest extends UnitTestCase {
     $this->assertSame(0, $repository->countEntitiesOfType('test_type'));
   }
 
-  public function provideNumberOfEntities(): array {
+  public static function provideNumberOfEntities(): array {
     return [
       [0],
       [62],

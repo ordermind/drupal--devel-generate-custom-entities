@@ -119,7 +119,7 @@ class EntityGeneratorTest extends UnitTestCase {
     $this->assertEquals($numberOfEntities, $storage->count());
   }
 
-  public function provideNumberOfEntities(): array {
+  public static function provideNumberOfEntities(): array {
     return [
       [0],
       [1],
